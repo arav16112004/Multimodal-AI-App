@@ -1,9 +1,17 @@
 import Link from "next/link";
 import { auth } from "~/server/auth";
 import { signOut } from "~/server/auth";
+import { db } from "~/server/db";
+import ApiSection from "~/components/client/ApiSection";
+
 
 export default async function HomePage() {
   const session = await auth();
+  const quota = await db.apiQuota.findUniqueOrThrow({
+    where: {
+      userId: session?.user.id,
+    },
+  });
 
   if (!session) {
     return (
@@ -187,6 +195,9 @@ export default async function HomePage() {
             Get Started with Video Analysis
           </button>
         </div>
+
+        {/* API Section */}
+        <ApiSection quota={quota} />
       </main>
     </div>
   );

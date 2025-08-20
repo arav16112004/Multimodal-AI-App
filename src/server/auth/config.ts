@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { loginSchema } from "~/schemas/auth";
 import bcrypt from "bcryptjs";
 import { db } from "~/server/db";
+import { env } from "~/env";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -32,10 +33,31 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
+  secret: env.AUTH_SECRET,
   pages: {
     signIn: "/login",
-
-
+  },
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
+    session: ({ session, token }) => ({
+      ...session,
+      user: {
+        ...session.user,
+        id: token.id as string,
+      },
+    }),
   },
   providers: [
     Credentials({
@@ -46,28 +68,34 @@ export const authConfig = {
       },
       async authorize(credentials) {
         try{
+          console.log("Auth attempt with:", credentials);
           const {email, password} = await loginSchema.parseAsync(credentials);
+          console.log("Parsed credentials:", { email });
+          
           const user = await db.user.findUnique({
             where: {
               email,
             },
           });
+          console.log("Found user:", user ? "yes" : "no");
 
           if (!user) return null;
           if (!user.password) return null;
 
           const isValid = await bcrypt.compare(password, user.password);
-
+          console.log("Password valid:", isValid);
 
           if (!isValid) return null;
 
-          return{
+          const result = {
             id: user.id,
             email: user.email,
             name: user.name,
-          }
+          };
+          console.log("Returning user:", result);
+          return result;
         } catch (error) {
-          console.error(error);
+          console.error("Auth error:", error);
           return null;
         }
       }
@@ -84,15 +112,5 @@ export const authConfig = {
   ],
   session: {
     strategy: "jwt",
-  },
-  adapter: PrismaAdapter(db),
-  callbacks: {
-    session: ({ session, token }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: token.sub,
-      },
-    }),
   },
 } satisfies NextAuthConfig;
