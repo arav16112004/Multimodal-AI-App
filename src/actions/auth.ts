@@ -3,6 +3,7 @@
 import { db } from "~/server/db";
 import { signupSchema, type SignupSchema } from "~/schemas/auth";
 import { hash } from "bcryptjs";
+import crypto from "crypto";
 
 
 
@@ -27,7 +28,18 @@ export async function registerUser(data: SignupSchema) {
 
         const hashedPassword = await hash(password, 12);
 
-        const user = await db.user.create({data: {name, email, password: hashedPassword}});
+        const user = await db.user.create(
+            {data: 
+                {name,
+                email,
+                password: hashedPassword,
+                apiQuota: {
+                    create: {
+                        secretKey: `sa_live_${crypto.randomBytes(24).toString("hex")}`,
+                    }
+                },
+            }
+        });
 
         return {sucess:true}
 

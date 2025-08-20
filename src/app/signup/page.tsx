@@ -3,15 +3,14 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signupSchema, type SignupSchema } from "~/schemas/auth";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { registerUser } from "~/actions/auth";
-import { signIn, useSession } from "next-auth/react";
+import { signIn,  } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 
 export default function SignupPage() {
     const router = useRouter();
-    const { data: session } = useSession();
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const form = useForm<SignupSchema>({
@@ -30,11 +29,8 @@ export default function SignupPage() {
             const results = await registerUser(data);
             if(results.error){
                 setError(results.error);
-                setLoading(false);
                 return;
             }
-            
-            // Sign in after successful registration
             const signInResult = await signIn("credentials", {
                 redirect: false,
                 email: data.email,
@@ -43,22 +39,17 @@ export default function SignupPage() {
 
             if(signInResult?.error){
                 setError("Failed to sign in");
-                setLoading(false);
             }
-            // If successful, the useEffect will handle redirect
+            else{
+                router.push("/");
+            }
 
         }catch(error){
             setError("Something went wrong");
+        }finally{
             setLoading(false);
         }
     }
-
-    // Redirect to homepage when session is available
-    useEffect(() => {
-        if (session) {
-            router.push("/");
-        }
-    }, [session, router]);
 
 
     return (

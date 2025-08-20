@@ -1,18 +1,13 @@
 import Link from "next/link";
 import { auth } from "~/server/auth";
 import { signOut } from "~/server/auth";
-import { db } from "~/server/db";
-import ApiSection from "~/components/client/ApiSection";
+import ApiKeyDisplay from "~/components/client/api-key-display";
+
 
 
 export default async function HomePage() {
   const session = await auth();
-  const quota = await db.apiQuota.findUniqueOrThrow({
-    where: {
-      userId: session?.user.id,
-    },
-  });
-
+  
   if (!session) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 relative overflow-hidden">
@@ -121,6 +116,7 @@ export default async function HomePage() {
           <span className="text-2xl font-extrabold text-white">SentimentAnalysis</span>
         </div>
         <div className="flex items-center space-x-6">
+          <a href="/api-docs" className="text-gray-300 hover:text-white transition-colors font-semibold">API Docs</a>
           <span className="text-gray-300 font-semibold">
             Welcome, {session.user.name || session.user.email}
           </span>
@@ -182,11 +178,27 @@ export default async function HomePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-white mb-4">View Reports</h3>
-            <p className="text-gray-300 mb-6">Access comprehensive analytics and actionable insights</p>
-            <button className="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all duration-300">
-              View Reports
-            </button>
+            <h3 className="text-xl font-bold text-white mb-4">API Documentation</h3>
+            <p className="text-gray-300 mb-6">Get your API key and integrate sentiment analysis into your apps</p>
+            <a href="/api-docs" className="block w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all duration-300 text-center">
+              View API Docs
+            </a>
+          </div>
+        </div>
+
+        {/* API Documentation Section */}
+        <div className="mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-black text-white mb-4">
+              API <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Access</span>
+            </h2>
+            <p className="text-xl text-purple-300 font-semibold max-w-3xl mx-auto">
+              Use our API to integrate video sentiment analysis into your applications
+            </p>
+          </div>
+          
+          <div className="max-w-6xl mx-auto">
+            <ApiKeyDisplay />
           </div>
         </div>
 
@@ -195,9 +207,6 @@ export default async function HomePage() {
             Get Started with Video Analysis
           </button>
         </div>
-
-        {/* API Section */}
-        <ApiSection quota={quota} />
       </main>
     </div>
   );
