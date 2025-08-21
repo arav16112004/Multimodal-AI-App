@@ -63,7 +63,7 @@ export default function UploadButton({ apiKey, onAnalysis }: UploadButtonProps) 
   return (
     <button 
       onClick={handleUpload}
-      className="w-full py-3 px-6 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all duration-300"
+      className="w-full py-12 px-12 bg-purple-600 hover:bg-purple-700 text-white font-bold text-2xl rounded-3xl transition-all duration-500 hover:scale-105 hover:shadow-2xl backdrop-blur-sm hover:backdrop-blur-md"
     >
       Upload Now
     </button>
