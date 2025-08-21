@@ -91,16 +91,10 @@ export async function POST(request: Request) {
             }
         });
 
-
-
-
-
         return NextResponse.json({
             analysis,
             
         });
-
-        
         
     } catch (error) {
         console.error(error);

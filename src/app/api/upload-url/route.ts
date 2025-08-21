@@ -4,12 +4,15 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { env } from "~/env";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { randomUUID } from "crypto";
 
 
 export async function POST(request: Request) {
     try{
-
+        console.log('Upload URL API called');
+        
         const apiKey = request.headers.get("Authorization")?.replace("Bearer ", "");
+        console.log('API key received:', apiKey ? 'Present' : 'Missing');
 
         if(!apiKey){
             return NextResponse.json({error: "API key is required"}, {status: 401});
@@ -25,13 +28,15 @@ export async function POST(request: Request) {
             }
         });
 
+        console.log('Quota lookup result:', quota ? 'Found' : 'Not found');
+
         if(!quota){
             return NextResponse.json({error: "Invalid API key"}, {status: 401});
         }
 
         const {fileType} = await request.json();
-        if (!fileType || !fileType.match(/\.(mp4|mov|avi)$/i)) {
-            return NextResponse.json({error: "Invalid file type"}, {status: 400});
+        if (!fileType || !fileType.startsWith('video/')) {
+            return NextResponse.json({error: "Invalid file type. Must be a video file."}, {status: 400});
         }
 
         const s3Client = new S3Client({
@@ -42,16 +47,16 @@ export async function POST(request: Request) {
             },
         });
 
-        const id = crypto.randomUUID();
+        const id = randomUUID();
 
-        const key = `inference/${id}${fileType}`;
+        // Extract file extension from MIME type
+        const extension = fileType.split('/')[1] || 'mp4';
+        const key = `inference/${id}.${extension}`;
 
-        // TODO: Generate presigned URL logic here
-        
         const command = new PutObjectCommand({
             Bucket: env.AWS_INFERENCE_BUCKET,
             Key: key,
-            ContentType: `video/${fileType.replace(".", "")}`,
+            ContentType: fileType,
         })
         const url = await getSignedUrl(s3Client, command, {expiresIn: 3600})
 
@@ -77,7 +82,7 @@ export async function POST(request: Request) {
 
 
     } catch (error) {
-        console.error(error);
+        console.error('Upload URL API error:', error);
         return NextResponse.json({error: "Internal server error"}, {status: 500});
     }
 
