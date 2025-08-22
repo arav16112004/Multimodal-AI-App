@@ -266,5 +266,3 @@ For questions and support:
 - **v0.4.0**: Performance optimizations and UI improvements
 
 ---
-
-**Built with ❤️ using Next.js, PyTorch, and AWS**
