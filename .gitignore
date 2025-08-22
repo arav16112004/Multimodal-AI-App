@@ -1,0 +1,35 @@
+# Large dataset files
+dataset/
+*.tar.gz
+*.pkg
+
+# Model files
+*.pth
+*.pt
+model/
+
+# Training runs
+runs/
+*.tfevents*
+
+# Virtual environments
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# AWS
+*.tar.gz
+model.tar.gz
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
