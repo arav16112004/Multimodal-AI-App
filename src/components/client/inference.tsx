@@ -40,6 +40,13 @@ export type Analysis = {
 export function Inference({ quota }: InferenceProps) {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
 
+  const handleAnalysis = (analysisData: Analysis) => {
+    console.log('Inference component received analysis:', analysisData);
+    console.log('Analysis type:', typeof analysisData);
+    console.log('Analysis keys:', Object.keys(analysisData));
+    setAnalysis(analysisData);
+  };
+
   const getAverageScores = () => {
     if (!analysis?.analysis.utterances.length) return null;
 
@@ -89,8 +96,7 @@ export function Inference({ quota }: InferenceProps) {
 
   return (
     <div className="flex h-fit w-full flex-col gap-3">
-      <h2 className="text-ls font-medium text-slate-800">Inference</h2>
-      <UploadButton onAnalysis={setAnalysis} apiKey={quota.secretKey} />
+      <UploadButton onAnalysis={handleAnalysis} apiKey={quota.secretKey} />
 
       <h2 className="mt-2 text-sm text-slate-800">Overall analysis</h2>
       {averages ? (

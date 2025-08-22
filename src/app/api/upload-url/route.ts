@@ -39,6 +39,9 @@ export async function POST(request: Request) {
             return NextResponse.json({error: "Invalid file type. Must be a video file."}, {status: 400});
         }
 
+        console.log('AWS_INFERENCE_BUCKET value:', env.AWS_INFERENCE_BUCKET);
+        console.log('AWS_REGION value:', env.AWS_REGION);
+
         const s3Client = new S3Client({
             region: process.env.AWS_REGION || 'us-east-1',
             credentials: {
@@ -58,6 +61,9 @@ export async function POST(request: Request) {
             Key: key,
             ContentType: fileType,
         })
+        
+        console.log('S3 command created with bucket:', env.AWS_INFERENCE_BUCKET);
+        
         const url = await getSignedUrl(s3Client, command, {expiresIn: 3600})
 
         await db.videoFile.create({
